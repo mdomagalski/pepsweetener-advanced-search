@@ -1,0 +1,142 @@
+<!-- Imports polymer -->
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-form/iron-form.html">
+<link rel="import" href="../iron-pages/iron-pages.html">
+<link rel="import" href="../paper-header-panel/paper-header-panel.html">
+<link rel="import" href="../paper-input/paper-input.html">
+<link rel="import" href="../paper-input/paper-textarea.html">
+<link rel="import" href="../paper-button/paper-button.html">
+<link rel="import" href="../paper-tabs/paper-tab.html">
+<link rel="import" href="../paper-tabs/paper-tabs.html">
+<link rel="import" href="../glycopeptide-dataset-generator/glycopeptide-dataset-generator.html">
+<link rel="import" href="../glycopeptide-multi-result/glycopeptide-multi-result.html">
+
+<script src="search-controller.js"></script>
+
+<!-- Defines element markup -->
+<dom-module id="glycopeptide-advanced-search">
+    <style>
+
+        paper-tabs {
+            min-width: 400px;
+            width: 40%;
+        }
+        paper-header-panel {
+            min-height: 270px;
+            margin: 12px;
+            @apply(--shadow-elevation-2dp);
+            --paper-header-panel-shadow: {
+                height: 6px;
+                bottom: -6px;
+                box-shadow: inset 0px 5px 6px -3px rgba(0, 0, 0, 0.4);
+            };
+            --paper-header-panel-standard-container: {
+                border: 1px solid gray;
+            };
+        }
+        paper-input {
+            min-width: 300px;
+            width: 300px;
+            display: inline-block;
+            margin: 50px 10px 0px 80px;
+        }
+        paper-textarea {
+            min-width: 300px;
+            width: 300px;
+            display: inline-block;
+            margin: 50px 10px 0px 80px;
+        }
+        paper-button.indigo {
+            font-family: "Roboto";
+            background-color: var(--paper-indigo-500);
+            color: white;
+            margin-left: 80px;
+            margin-top: 40px;
+            --paper-button-raised-keyboard-focus: {
+                background-color: var(--paper-indigo-a300) !important;
+                color: white !important;
+            };
+        }
+        .paper-header {
+            font-family: "Roboto";
+            height: 60px;
+            font-size: 20px;
+            line-height: 60px;
+            padding: 0 10px;
+            color: white;
+            transition: height 0.2s;
+        }
+        .blue .paper-header {
+            background-color: var(--paper-indigo-500);
+        }
+    </style>
+    <template>
+        <paper-header-panel class="blue" mode="standard">
+
+            <div class="paper-header">
+                <paper-tabs selected={{selected}}>
+                    <paper-tab>GENERATE GLYCOPEPTIDE DATASET</paper-tab>
+                    <paper-tab>SEARCH</paper-tab>
+                </paper-tabs>
+            </div>
+
+            <iron-pages selected={{selected}}>
+
+                <glycopeptide-dataset-generator id="datasource"></glycopeptide-dataset-generator>
+
+                <form is="iron-form" id="AdvancedSearchForm">
+                    <paper-textarea name="masses" label="List of glycopeptide masses (Da)" value="{{masses}}"></paper-textarea>
+                    <paper-input name="ppm" label="tolerance (ppm)" value="{{ppm}}"></paper-input>
+                    <paper-button raised class="indigo" on-click="search">search</paper-button>
+                </form>
+
+            </iron-pages>
+        </paper-header-panel>
+
+        <glycopeptide-multi-result id="results"></glycopeptide-multi-result>
+    </template>
+
+    <!-- Registers custom element -->
+    <script>
+    Polymer({
+        is: 'glycopeptide-advanced-search',
+        properties: {
+            controller: Object,
+            masses: String,
+            ppm: {
+                type: Number,
+                value: 10
+            },
+            errorMessage: {
+                type: String,
+                value: "Please check your query"
+            }
+        },
+        ready: function () {
+            this.selected = 0;
+        },
+        search: function() {
+            console.log(this.$.datasource.glycopeptides);
+            this.controller = new searchController(this.$.datasource.glycopeptides);
+
+            if(this.masses=="" || this.masses==null){
+                alert(this.errorMessage);
+            }
+            var queryList = this.masses.split(",").filter(Number);
+            for(var i=0; i<queryList.length; i++){queryList[i] = queryList[i].trim()};
+
+            var nonRedundantQueryList = queryList.filter(function(item, pos) {
+                return queryList.indexOf(item) == pos;
+            });
+            var multiResultElement = Polymer.dom(this.root).querySelector('#results');
+            multiResultElement.masses = nonRedundantQueryList;
+
+            for(mass of nonRedundantQueryList){
+                var query = this.controller.query(mass, this.ppm);
+                console.log(query);
+                multiResultElement.newDataset(query);
+            }
+        }
+    });
+    </script>
+</dom-module>
