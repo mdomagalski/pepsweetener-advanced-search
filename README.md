@@ -1,24 +1,8 @@
-# &lt;my-repo&gt;
+# glycopeptide-advanced-search
 
-> A bare minimum custom element starter-kit using [Polymer](http://www.polymer-project.org/).
->
-> Like [Yeoman](http://yeoman.io/)? Use the [generator-element](https://www.npmjs.org/package/generator-element) instead.
->
-> Looking for a working example? Check [hello-world-polymer](https://github.com/webcomponents/hello-world-polymer).
-
-## Demo
-
-[Check it live!](http://my-user.github.io/my-repo)
-
-## Install
-
-Install the component using [Bower](http://bower.io/):
-
-```sh
-$ bower install my-repo --save
-```
-
-Or [download as ZIP](https://github.com/my-user/my-repo/archive/master.zip).
+> Advanced glycopeptide search on dataset generated created by user by
+> specifying list of peptides (or masses) with list of glycan compositions
+> (or masses)
 
 ## Usage
 
@@ -31,32 +15,30 @@ Or [download as ZIP](https://github.com/my-user/my-repo/archive/master.zip).
 2. Import custom element:
 
     ```html
-    <link rel="import" href="bower_components/my-repo/my-element.html">
+    <link rel="import" href="bower_components/glycopeptide-advanced-search/glycopeptide-advanced-search.html">
     ```
 
 3. Start using it!
 
     ```html
-    <my-element></my-element>
+    <glycopeptide-advanced-search></glycopeptide-advanced-search>
     ```
 
 ## Options
 
 Attribute     | Options     | Default      | Description
 ---           | ---         | ---          | ---
-`foo`         | *string*    | `bar`        | Lorem ipsum dolor.
+`controller`  | *object*    | -            | datasource client initialized on creation of new dataset
+`masses`      | *string*    | ``           | query list of masses
+`ppm`         | *number*    | 10           | default ppm tolerance
 
 ## Methods
 
 Method        | Parameters   | Returns     | Description
 ---           | ---          | ---         | ---
-`unicorn()`   | None.        | Nothing.    | Magic stuff appears.
-
-## Events
-
-Event         | Description
----           | ---
-`onsomething` | Triggers when something happens.
+`search()`    | None.        | Nothing.    | Filters masses from the query, submits the search list to glycopeptide-multi-result,
+              |              |             | and executes the query for each mass individually using search controller.
+`ready()`     | None.        | Nothing.    | Sets the elements
 
 ## Development
 
@@ -74,7 +56,7 @@ In order to run it locally you'll need to fetch some dependencies and a basic se
     $ bower install
     ```
 
-3. Start development server and open `http://localhost:8080/components/my-repo/`.
+3. Start development server and open `http://localhost:8080/components/glycopeptide-advanced-search/`.
 
     ```sh
     $ polyserve
@@ -82,7 +64,7 @@ In order to run it locally you'll need to fetch some dependencies and a basic se
 
 ## History
 
-For detailed changelog, check [Releases](https://github.com/my-user/my-repo/releases).
+For detailed changelog, check [Releases](https://bitbucket.org/pig-sib/glycopeptide-advanced-search/releases).
 
 ## License
 
