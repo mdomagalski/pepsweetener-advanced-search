@@ -4,6 +4,7 @@ function searchController(dataset) {
     this.matchedGlycopeptides = [];
 
     this.query = function (mass, ppm) {
+        this.matchedGlycopeptides = [];
         var daTolerance = massConversion.ppmToDalton(mass,ppm);
         var minMass = +mass - daTolerance;
         var maxMass = +mass + daTolerance;
@@ -51,9 +52,7 @@ function searchController(dataset) {
         if(this.matchedGlycopeptides.length > 0) {
             var peptideCounter = 0;
             var glycanCounter = 0;
-            console.log(this.matchedGlycopeptides);
             this.matchedGlycopeptides.forEach(function (glycopeptide) {
-                console.log(glycopeptide);
                 var peptide = glycopeptide[0];
                 var glycan = glycopeptide[1].replace(":", "\:");
                 var glycopeptideMass = glycopeptide[2];
@@ -73,7 +72,7 @@ function searchController(dataset) {
                     glycanIdx = glycanCounter;
                     glycanList.push(glycan);
                 }
-                glycopeptideMap.push({'peptide': peptideIdx, 'glycan': glycanIdx, 'value': this.massConversion.daltonToPpm(queryMass, Math.abs(queryMass-glycopeptideMass)), 'mass': glycopeptideMass});
+                glycopeptideMap.push({'peptide': peptideIdx, 'glycan': glycanIdx, 'value': massConversion.daltonToPpm(queryMass, Math.abs(queryMass-glycopeptideMass)), 'mass': glycopeptideMass});
             })
         }
         return({'mass': queryMass, 'data': {'peptides': peptideList, 'glycans': glycanList, 'map': glycopeptideMap}});

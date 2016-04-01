@@ -16,11 +16,11 @@
 <!-- Defines element markup -->
 <dom-module id="glycopeptide-advanced-search">
     <style>
-
         paper-tabs {
             min-width: 400px;
-            width: 40%;
+            width: 50%;
         }
+
         paper-header-panel {
             min-height: 270px;
             margin: 12px;
@@ -34,29 +34,32 @@
                 border: 1px solid gray;
             };
         }
+
         paper-input {
-            min-width: 300px;
-            width: 300px;
+            min-width: 200px;
+            width: 10%;
             display: inline-block;
             margin: 50px 10px 0px 80px;
         }
+
         paper-textarea {
             min-width: 300px;
-            width: 300px;
+            width: 50%;
             display: inline-block;
             margin: 50px 10px 0px 80px;
         }
+
         paper-button.indigo {
             font-family: "Roboto";
             background-color: var(--paper-indigo-500);
             color: white;
             margin-left: 80px;
-            margin-top: 40px;
             --paper-button-raised-keyboard-focus: {
                 background-color: var(--paper-indigo-a300) !important;
                 color: white !important;
             };
         }
+
         .paper-header {
             font-family: "Roboto";
             height: 60px;
@@ -66,6 +69,7 @@
             color: white;
             transition: height 0.2s;
         }
+
         .blue .paper-header {
             background-color: var(--paper-indigo-500);
         }
@@ -76,18 +80,19 @@
             <div class="paper-header">
                 <paper-tabs selected={{selected}}>
                     <paper-tab>GENERATE GLYCOPEPTIDE DATASET</paper-tab>
-                    <paper-tab>SEARCH</paper-tab>
+                    <paper-tab id="searchTab" disabled>SEARCH</paper-tab>
                 </paper-tabs>
             </div>
 
             <iron-pages selected={{selected}}>
 
-                <glycopeptide-dataset-generator id="datasource"></glycopeptide-dataset-generator>
+                <glycopeptide-dataset-generator id="datasource" glycopeptides="{{dataset}}"></glycopeptide-dataset-generator>
 
                 <form is="iron-form" id="AdvancedSearchForm">
                     <paper-textarea name="masses" label="List of glycopeptide masses (Da)" value="{{masses}}"></paper-textarea>
                     <paper-input name="ppm" label="tolerance (ppm)" value="{{ppm}}"></paper-input>
                     <paper-button raised class="indigo" on-click="search">search</paper-button>
+                    <paper-dialog id="finishedDialog"></paper-dialog>
                 </form>
 
             </iron-pages>
@@ -101,6 +106,9 @@
     Polymer({
         is: 'glycopeptide-advanced-search',
         properties: {
+            dataset: {
+                observer: '_datasetChanged'
+            },
             controller: Object,
             masses: String,
             ppm: {
@@ -115,9 +123,23 @@
         ready: function () {
             this.selected = 0;
         },
+        _datasetChanged: function (value) {
+            this.controller = new searchController(this.dataset);
+            if(Object.keys(this.dataset).length>0){
+                this.$$("#searchTab").disabled = false;
+                this.selected = 1;
+                this.$.finishedDialog.innerHTML =
+                    "<h2>You have generated a dataset containing "
+                    +Object.keys(this.dataset).length
+                    +" theoretical glycopeptides</h2>";
+                this.$.finishedDialog.open();
+            }else{
+                this.$$("#searchTab").disabled = true;
+            }
+        },
         search: function() {
-            console.log(this.$.datasource.glycopeptides);
-            this.controller = new searchController(this.$.datasource.glycopeptides);
+            var multiResultElement = Polymer.dom(this.root).querySelector('#results');
+            multiResultElement.datasets = {};
 
             if(this.masses=="" || this.masses==null){
                 alert(this.errorMessage);
@@ -128,12 +150,10 @@
             var nonRedundantQueryList = queryList.filter(function(item, pos) {
                 return queryList.indexOf(item) == pos;
             });
-            var multiResultElement = Polymer.dom(this.root).querySelector('#results');
             multiResultElement.masses = nonRedundantQueryList;
 
             for(mass of nonRedundantQueryList){
                 var query = this.controller.query(mass, this.ppm);
-                console.log(query);
                 multiResultElement.newDataset(query);
             }
         }
