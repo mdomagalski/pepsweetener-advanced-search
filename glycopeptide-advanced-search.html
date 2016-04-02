@@ -20,7 +20,7 @@
             min-width: 400px;
             width: 50%;
         }
-
+        
         paper-header-panel {
             min-height: 270px;
             margin: 12px;
@@ -80,6 +80,7 @@
             <div class="paper-header">
                 <paper-tabs selected={{selected}}>
                     <paper-tab>GENERATE GLYCOPEPTIDE DATASET</paper-tab>
+                    <iron-icon icon="chevron-right" class="arrow" active></iron-icon>
                     <paper-tab id="searchTab" disabled>SEARCH</paper-tab>
                 </paper-tabs>
             </div>
@@ -87,7 +88,6 @@
             <iron-pages selected={{selected}}>
 
                 <glycopeptide-dataset-generator id="datasource" glycopeptides="{{dataset}}"></glycopeptide-dataset-generator>
-
                 <form is="iron-form" id="AdvancedSearchForm">
                     <paper-textarea name="masses" label="List of glycopeptide masses (Da)" value="{{masses}}"></paper-textarea>
                     <paper-input name="ppm" label="tolerance (ppm)" value="{{ppm}}"></paper-input>
