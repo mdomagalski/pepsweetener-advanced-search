@@ -23,8 +23,8 @@
 
         paper-header-panel {
             min-height: 270px;
-            margin-left: 48px;
-            margin-right: 60px;
+            margin-left: 36px;
+            margin-right: 48px;
             @apply(--shadow-elevation-2dp);
             --paper-header-panel-shadow: {
                 height: 6px;
@@ -99,65 +99,65 @@
             </iron-pages>
         </paper-header-panel>
 
-        <glycopeptide-multi-result id="results"></glycopeptide-multi-result>
+        <glycopeptide-multi-result id="aResults"></glycopeptide-multi-result>
     </template>
 
     <!-- Registers custom element -->
     <script>
-    Polymer({
-        is: 'glycopeptide-advanced-search',
-        properties: {
-            dataset: {
-                observer: '_datasetChanged'
+        Polymer({
+            is: 'glycopeptide-advanced-search',
+            properties: {
+                dataset: {
+                    observer: '_datasetChanged'
+                },
+                controller: Object,
+                masses: String,
+                ppm: {
+                    type: Number,
+                    value: 10
+                },
+                errorMessage: {
+                    type: String,
+                    value: "Please check your query"
+                }
             },
-            controller: Object,
-            masses: String,
-            ppm: {
-                type: Number,
-                value: 10
+            ready: function () {
+                this.selected = 0;
             },
-            errorMessage: {
-                type: String,
-                value: "Please check your query"
-            }
-        },
-        ready: function () {
-            this.selected = 0;
-        },
-        _datasetChanged: function (value) {
-            this.controller = new searchController(this.dataset);
-            if(Object.keys(this.dataset).length>0){
-                this.$$("#searchTab").disabled = false;
-                this.selected = 1;
-                this.$.finishedDialog.innerHTML =
-                    "<h2>You have generated a dataset containing "
-                    +this.$.datasource.datasetLength
-                    +" theoretical glycopeptides</h2>";
-                this.$.finishedDialog.open();
-            }else{
-                this.$$("#searchTab").disabled = true;
-            }
-        },
-        search: function() {
-            var multiResultElement = Polymer.dom(this.root).querySelector('#results');
-            multiResultElement.datasets = {};
+            _datasetChanged: function (value) {
+                this.controller = new searchController(this.dataset);
+                if(Object.keys(this.dataset).length>0){
+                    this.$$("#searchTab").disabled = false;
+                    this.selected = 1;
+                    this.$.finishedDialog.innerHTML =
+                        "<h2>You have generated a dataset containing "
+                        +this.$.datasource.datasetLength
+                        +" theoretical glycopeptides</h2>";
+                    this.$.finishedDialog.open();
+                }else{
+                    this.$$("#searchTab").disabled = true;
+                }
+            },
+            search: function() {
+                var multiResultElement = this.$$('#aResults');
+                multiResultElement.datasets = {};
 
-            if(this.masses=="" || this.masses==null){
-                alert(this.errorMessage);
-            }
-            var queryList = this.masses.split(",").filter(Number);
-            for(var i=0; i<queryList.length; i++){queryList[i] = queryList[i].trim()};
+                if(this.masses=="" || this.masses==null){
+                    alert(this.errorMessage);
+                }
+                var queryList = this.masses.split(",").filter(Number);
+                for(var i=0; i<queryList.length; i++){queryList[i] = queryList[i].trim()};
 
-            var nonRedundantQueryList = queryList.filter(function(item, pos) {
-                return queryList.indexOf(item) == pos;
-            });
-            multiResultElement.masses = nonRedundantQueryList;
+                var nonRedundantQueryList = queryList.filter(function(item, pos) {
+                    return queryList.indexOf(item) == pos;
+                });
+                multiResultElement.masses = nonRedundantQueryList;
 
-            for(mass of nonRedundantQueryList){
-                var query = this.controller.query(mass, this.ppm);
-                multiResultElement.newDataset(query);
+                for(mass of nonRedundantQueryList){
+                    var query = this.controller.query(mass, this.ppm);
+                    multiResultElement.newDataset(query);
+                }
             }
-        }
-    });
+        });
     </script>
 </dom-module>
