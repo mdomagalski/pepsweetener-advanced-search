@@ -131,7 +131,7 @@
                 this.selected = 1;
                 this.$.finishedDialog.innerHTML =
                     "<h2>You have generated a dataset containing "
-                    +Object.keys(this.dataset).length
+                    +this.$.datasource.datasetLength
                     +" theoretical glycopeptides</h2>";
                 this.$.finishedDialog.open();
             }else{
