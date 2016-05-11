@@ -2,12 +2,14 @@
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../iron-form/iron-form.html">
 <link rel="import" href="../iron-pages/iron-pages.html">
+<link rel="import" href="../iron-icons/iron-icons.html">
 <link rel="import" href="../paper-header-panel/paper-header-panel.html">
 <link rel="import" href="../paper-input/paper-input.html">
 <link rel="import" href="../paper-input/paper-textarea.html">
 <link rel="import" href="../paper-button/paper-button.html">
-<link rel="import" href="../paper-tabs/paper-tab.html">
+<link rel="import" href="../paper-dialog/paper-dialog.html">
 <link rel="import" href="../paper-tabs/paper-tabs.html">
+<link rel="import" href="../paper-tabs/paper-tab.html">
 <link rel="import" href="../glycopeptide-dataset-generator/glycopeptide-dataset-generator.html">
 <link rel="import" href="../glycopeptide-multi-result/glycopeptide-multi-result.html">
 
@@ -18,7 +20,6 @@
     <style>
         paper-tabs {
             min-width: 400px;
-            width: 50%;
         }
 
         paper-header-panel {
@@ -61,6 +62,15 @@
             };
         }
 
+        paper-dialog {
+            position: fixed;
+            text-align: center;
+            margin: 30px;
+            width: auto;
+            height: auto;
+            overflow: auto;
+        }
+
         .paper-header {
             font-family: "Roboto";
             height: 60px;
@@ -74,6 +84,21 @@
         .blue .paper-header {
             background-color: var(--paper-indigo-500);
         }
+
+        #download {
+            height: auto;
+            text-decoration: none;
+            color: white;
+        }
+
+        #downloadTab {
+            margin-left: 35%;
+        }
+
+        .disabled {
+            pointer-events: none;
+            cursor: default;
+        }
     </style>
     <template>
         <paper-header-panel class="blue" mode="standard">
@@ -83,6 +108,10 @@
                     <paper-tab>GENERATE GLYCOPEPTIDE DATASET</paper-tab>
                     <iron-icon icon="chevron-right" class="arrow" active></iron-icon>
                     <paper-tab id="searchTab" disabled>SEARCH</paper-tab>
+                    <div id="downloadTab" class="disabled">
+                        <iron-icon mini icon="file-download"></iron-icon>
+                        <a id="download" on-click="download">DOWNLOAD DATASET</a>
+                    </div>
                 </paper-tabs>
             </div>
 
@@ -128,6 +157,7 @@
                 this.controller = new searchController(this.dataset);
                 if(Object.keys(this.dataset).length>0){
                     this.$$("#searchTab").disabled = false;
+                    this.$$("#downloadTab").setAttribute("class", "style-scope glycopeptide-advanced-search");
                     this.selected = 1;
                     this.$.finishedDialog.innerHTML =
                         "<h2>You have generated a dataset containing "
@@ -157,6 +187,16 @@
                     var query = this.controller.query(mass, this.ppm);
                     multiResultElement.newDataset(query);
                 }
+            },
+            download: function(){
+                if(!this.filename){
+                    timestamp = new Date().getTime();
+                    this.filename = "pep-sweetener-dataset-"+timestamp+".json";
+                }
+                var button = this.$.download;
+                var file = new Blob([JSON.stringify(this.dataset)], {type: 'json'});
+                button.href = URL.createObjectURL(file);
+                button.download = this.filename;
             }
         });
     </script>
