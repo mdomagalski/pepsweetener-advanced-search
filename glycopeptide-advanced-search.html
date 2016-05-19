@@ -8,12 +8,14 @@
 <link rel="import" href="../paper-input/paper-textarea.html">
 <link rel="import" href="../paper-button/paper-button.html">
 <link rel="import" href="../paper-dialog/paper-dialog.html">
-<link rel="import" href="../paper-tabs/paper-tabs.html">
 <link rel="import" href="../paper-tabs/paper-tab.html">
+<link rel="import" href="../paper-tabs/paper-tabs.html">
 <link rel="import" href="../glycopeptide-dataset-generator/glycopeptide-dataset-generator.html">
 <link rel="import" href="../glycopeptide-multi-result/glycopeptide-multi-result.html">
 
 <script src="search-controller.js"></script>
+<script src="../webcomponentsjs/webcomponents.js"></script>
+<script src="../FileSaver/FileSaver.min.js"></script>
 
 <!-- Defines element markup -->
 <dom-module id="glycopeptide-advanced-search">
@@ -61,7 +63,6 @@
                 color: white !important;
             };
         }
-
         paper-dialog {
             position: fixed;
             text-align: center;
@@ -175,8 +176,18 @@
                 if(this.masses=="" || this.masses==null){
                     alert(this.errorMessage);
                 }
-                var queryList = this.masses.split(",").filter(Number);
-                for(var i=0; i<queryList.length; i++){queryList[i] = queryList[i].trim()};
+                var chargeStatePattern = /\((\+\d+|\-\d+)\)/g;
+                var queryList = this.masses.split(",");
+                for(var i=0; i<queryList.length; i++){
+                    var chargeState = queryList[i].match(chargeStatePattern);
+                    if (chargeState){
+                        var mz = queryList[i].replace(chargeState[0], "");
+                        chargeState = new Number(chargeState[0].replace("(","").replace(")",""));
+                        queryList[i] = Math.abs((mz*chargeState)-(1.00727646677*chargeState)).toFixed(4);
+                    } else {
+                        queryList[i] = (queryList[i].trim());
+                    }
+                };
 
                 var nonRedundantQueryList = queryList.filter(function(item, pos) {
                     return queryList.indexOf(item) == pos;
@@ -189,13 +200,14 @@
                 }
             },
             download: function(){
+
                 if(!this.filename){
                     timestamp = new Date().getTime();
                     this.filename = "pep-sweetener-dataset-"+timestamp+".json";
                 }
+
                 var button = this.$.download;
-                var file = new Blob([JSON.stringify(this.dataset)], {type: 'json'});
-                button.href = URL.createObjectURL(file);
+                button.href = URL.createObjectURL(new Blob([JSON.stringify(this.dataset)]), {type: 'application/json'});
                 button.download = this.filename;
             }
         });
