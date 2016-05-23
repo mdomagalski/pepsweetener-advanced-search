@@ -14,13 +14,11 @@
   ],
   "dependencies": {
     "polymer": "Polymer#^1.3.1",
-    "iron-ajax": "PolymerElements/iron-ajax#^1.2.0",
-    "iron-form": "PolymerElements/iron-form#^1.0.16",
     "paper-input": "PolymerElements/paper-input#^1.1.10",
     "paper-button": "PolymerElements/paper-button#^1.0.11",
     "paper-header-panel": "PolymerElements/paper-header-panel#^1.1.4",
+    "paper-tabs": "PolymerElements/paper-tabs#^1.4.1",
     "glycopeptide-dataset-generator": "https://mdomagalski@bitbucket.org/sib-pig/glycopeptide-dataset-generator.git",
-    "glycopeptide-multi-result": "https://mdomagalski@bitbucket.org/sib-pig/glycopeptide-multi-result.git",
-    "paper-tabs": "PolymerElements/paper-tabs#^1.4.1"
+    "glycopeptide-multi-result": "https://mdomagalski@bitbucket.org/sib-pig/glycopeptide-multi-result.git"
   }
 }
