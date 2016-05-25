@@ -3,7 +3,7 @@ function searchController(dataset) {
     this.dataset = dataset;
     this.matchedGlycopeptides = [];
 
-    this.query = function (mass, ppm) {
+    this.query = function (mass, ppm, ranges) {
         this.matchedGlycopeptides = [];
         var daTolerance = massConversion.ppmToDalton(mass,ppm);
         var minMass = +mass - daTolerance;
@@ -24,7 +24,7 @@ function searchController(dataset) {
                 }
             }
         }
-        return this.generateResponse(mass);
+        return this.generateResponse(mass,ranges);
     };
 
     this.bucketSearch = function(bucket, minMass, maxMass){
@@ -45,7 +45,7 @@ function searchController(dataset) {
         }
     };
 
-    this.generateResponse = function (queryMass) {
+    this.generateResponse = function (queryMass,ranges) {
         var peptideList = [];
         var glycanList = [];
         var glycopeptideMap = [];
@@ -54,6 +54,9 @@ function searchController(dataset) {
             var glycanCounter = 0;
             this.matchedGlycopeptides.forEach(function (glycopeptide) {
                 var peptide = glycopeptide[0];
+                if(!validateGlycan(glycopeptide[1],ranges)){
+                    return;
+                }
                 var glycan = glycopeptide[1].replace(":", "\:");
                 var glycopeptideMass = glycopeptide[2];
                 var peptideExists = this.contains(peptideList, peptide);
@@ -65,6 +68,7 @@ function searchController(dataset) {
                     peptideIdx = peptideCounter;
                     peptideList.push(peptide);
                 }
+
                 if(glycanExists!=-1){
                     glycanIdx = glycanExists;
                 }else{
@@ -85,6 +89,37 @@ function searchController(dataset) {
             }
         }
         return -1;
+    };
+
+    validateGlycan = function (glycanString,rangeList) {
+        var glycan = createGlycan(glycanString);
+        for(var range in rangeList){
+            var minRange = Number(rangeList[range].minRange);
+            var presence = Boolean(rangeList[range].presence);
+            if(presence){   //Not possible in the range list.
+                if(minRange > 0 && !glycan.hasOwnProperty(range) ){
+                    return false;
+                }
+                if(minRange > 0 && minRange > glycan[range] ){
+                    return false;
+                }
+            } else {
+                if(glycan.hasOwnProperty(range)){
+                    return false;
+                }
+            }
+        }
+        return true;
+    };
+
+    createGlycan = function (glycanString) {
+     var tokens = glycanString.split("|");
+        var glycan = { };
+        tokens.forEach(function (item) {
+            var monosaccharide = item.split(":");
+            glycan[monosaccharide[0]] = monosaccharide[1];
+        })
+        return glycan;
     };
 }
 

@@ -19,6 +19,8 @@
     "paper-header-panel": "PolymerElements/paper-header-panel#^1.1.4",
     "paper-tabs": "PolymerElements/paper-tabs#^1.4.1",
     "glycopeptide-dataset-generator": "https://mdomagalski@bitbucket.org/sib-pig/glycopeptide-dataset-generator.git",
-    "glycopeptide-multi-result": "https://mdomagalski@bitbucket.org/sib-pig/glycopeptide-multi-result.git"
+    "glycopeptide-multi-result": "https://mdomagalski@bitbucket.org/sib-pig/glycopeptide-multi-result.git",
+    "paper-slider": "PolymerElements/paper-slider#^1.0.11",
+    "paper-toggle-button": "PolymerElements/paper-toggle-button#^1.1.2"
   }
 }
