@@ -310,13 +310,14 @@
             },
 
             _rangeObjectCreator: function () {
-                var paperInputs = Array.prototype.slice.call(document.getElementById('rangeBox').getElementsByTagName('paper-slider'));
+                var rangeBox = this.$.rangeBox;
+                var paperInputs = Array.prototype.slice.call(rangeBox.getElementsByTagName('paper-slider'));
                 var ranges = {};
                 paperInputs.forEach(function (item) {
                     var rangeObject = {};
                     var monosaccharideId = item.id.replace("Range","");
                     rangeObject["minRange"] = item.value;
-                    rangeObject["presence"] = Polymer.dom(document.getElementById('rangeBox')).querySelector("#"+monosaccharideId+"Toggle").checked;
+                    rangeObject["presence"] = Polymer.dom(rangeBox).querySelector("#"+monosaccharideId+"Toggle").checked;
                     ranges[monosaccharideId] = rangeObject;
                 });
                 return ranges;
