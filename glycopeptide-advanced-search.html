@@ -29,6 +29,7 @@
         paper-header-panel {
             margin-left: 36px;
             margin-right: 48px;
+            min-width: 422px;
             @apply(--shadow-elevation-2dp);
             --paper-header-panel-shadow: {
                 height: 6px;
@@ -51,7 +52,7 @@
             min-width: 300px;
             width: 50%;
             display: inline-block;
-            margin: 50px 10px 0px 80px;
+            margin: 0px 0px 30px 20px;
         }
 
         paper-button.indigo {
@@ -124,9 +125,17 @@
             font-size: larger;
         }
 
+        #searchBox {
+            border: 1px solid black;
+            margin-left: 36px;
+            margin-right: 48px;
+            padding-left: 20px;
+            min-width: 400px;
+        }
+
         #rangeBox{
-            margin-left: 20px;
-            margin-right: 20px;
+            margin-left: 50px;
+            margin-right: 10px;
         }
     </style>
     <template>
@@ -147,9 +156,11 @@
             <iron-pages selected={{selected}}>
                 <glycopeptide-dataset-generator id="datasource" glycopeptides="{{dataset}}"></glycopeptide-dataset-generator>
                 <div>
+                    <div id="searchBox" class="horizontal wrap">
                     <paper-textarea name="masses" label="List of glycopeptide masses (Da)" value="{{masses}}"></paper-textarea>
                     <paper-input name="ppm" label="tolerance (ppm)" value="{{ppm}}"></paper-input>
                     <paper-button raised class="indigo" on-click="search">search</paper-button>
+                    </div>
                     <h3 class="boxTitle">Glycan Filter</h3>
                     <div id="rangeBox" class="layout horizontal wrap">
                         <div class="singleRangeBox ">
