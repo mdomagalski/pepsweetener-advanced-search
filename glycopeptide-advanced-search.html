@@ -4,6 +4,9 @@
 <link rel="import" href="../paper-header-panel/paper-header-panel.html">
 <link rel="import" href="../paper-input/paper-input.html">
 <link rel="import" href="../paper-input/paper-textarea.html">
+<link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../paper-listbox/paper-listbox.html">
+<link rel="import" href="../paper-item/paper-item.html">
 <link rel="import" href="../paper-button/paper-button.html">
 <link rel="import" href="../paper-dialog/paper-dialog.html">
 <link rel="import" href="../paper-tabs/paper-tab.html">
@@ -35,7 +38,7 @@
         paper-header-panel {
             margin-left: 36px;
             margin-right: 48px;
-            min-width: 742px;
+            min-width: 802px;
             @apply(--shadow-elevation-2dp);
             --paper-header-panel-shadow: {
                 height: 6px;
@@ -48,10 +51,16 @@
         }
 
         paper-input {
-            min-width: 200px;
-            width: 10%;
+            margin-right: 0px;
+            width: 60px;
             display: inline-block;
-            margin: 50px 10px 0px 80px;
+            margin: 0px 0px 0px 80px;
+        }
+
+        paper-dropdown-menu {
+            display: inline-block;
+            width: 60px;
+            margin: 28px 30px 30px 5px;
         }
 
         paper-textarea {
@@ -138,7 +147,7 @@
             margin-left: 36px;
             margin-right: 48px;
             padding-left: 20px;
-            min-width: 720px;
+            min-width: 780px;
         }
 
         #rangeBox{
@@ -166,7 +175,13 @@
                 <div>
                     <div id="searchBox" class="horizontal wrap">
                     <paper-textarea name="masses" label="List of glycopeptide masses (Da)" value="{{masses}}"></paper-textarea>
-                    <paper-input name="ppm" label="tolerance (ppm)" value="{{ppm}}"></paper-input>
+                    <paper-input name="tolerance" label="tolerance" value="{{toleranceValue}}"></paper-input>
+                    <paper-dropdown-menu>
+                        <paper-listbox class="dropdown-content" attr-for-selected="value" selected="{{toleranceUnit}}">
+                            <paper-item value="ppm">ppm</paper-item>
+                            <paper-item value="Da">Da</paper-item>
+                        </paper-listbox>
+                    </paper-dropdown-menu>
                     <paper-button raised class="indigo" on-click="search">search</paper-button>
                     </div>
                     <h3 class="boxTitle">Glycan Filter</h3>
@@ -253,7 +268,11 @@
                 },
                 controller: Object,
                 masses: String,
-                ppm: {
+                toleranceUnit: {
+                    type: String,
+                    value: "ppm"
+                },
+                toleranceValue: {
                     type: Number,
                     value: 10
                 },
@@ -310,7 +329,6 @@
                     var chargeState = queryList[i].match(chargeStatePattern);
                     if (chargeState){
                         var mz = queryList[i].replace(chargeState[0], "");
-                        chargeState = new Number(chargeState[0].replace("(","").replace(")",""));
                         queryList[i] = Math.abs((mz*chargeState)-(1.00727646677*chargeState)).toFixed(4);
                     } else {
                         queryList[i] = (queryList[i].trim());
@@ -323,7 +341,7 @@
                 multiResultElement.masses = nonRedundantQueryList;
 
                 for(mass of nonRedundantQueryList){
-                    var query = this.controller.query(mass, this.ppm, this._rangeObjectCreator());
+                    var query = this.controller.query(mass, this.toleranceUnit, this.toleranceValue, this._rangeObjectCreator());
                     multiResultElement.newDataset(query);
                 }
             },

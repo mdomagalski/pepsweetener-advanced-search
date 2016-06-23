@@ -3,11 +3,15 @@ function searchController(dataset) {
     this.dataset = dataset;
     this.matchedGlycopeptides = [];
 
-    this.query = function (mass, ppm, ranges) {
+    this.query = function (mass, toleranceUnit, toleranceValue, ranges) {
         this.matchedGlycopeptides = [];
-        var daTolerance = massConversion.ppmToDalton(mass,ppm);
-        var minMass = +mass - daTolerance;
-        var maxMass = +mass + daTolerance;
+        if (toleranceUnit=="Da"){
+            var daTolerance = Number(toleranceValue);
+        } else {
+            var daTolerance = massConversion.ppmToDalton(mass,toleranceValue);
+        }
+        var minMass = Number(mass) - daTolerance;
+        var maxMass = Number(mass) + daTolerance;
         var bucketMass = Math.round( mass * 10 );
         var minBucketMass = Math.round( minMass * 10 );
         var maxBucketMass = Math.round( maxMass * 10 );
