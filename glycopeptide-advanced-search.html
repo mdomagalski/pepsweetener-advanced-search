@@ -330,6 +330,7 @@
                     var chargeState = queryList[i].match(chargeStatePattern);
                     if (chargeState){
                         var mz = queryList[i].replace(chargeState[0], "");
+                        chargeState = new Number(chargeState[0].replace("(","").replace(")",""));
                         queryList[i] = Math.abs((mz*chargeState)-(1.00727646677*chargeState)).toFixed(4);
                     } else {
                         queryList[i] = (queryList[i].trim());
