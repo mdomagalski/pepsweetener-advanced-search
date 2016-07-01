@@ -24,7 +24,13 @@
 <!-- Defines element markup -->
 <dom-module id="glycopeptide-advanced-search">
     <style is="custom-style" include="iron-flex iron-flex-alignment"></style>
-    <style>
+    <style is="advanced-search-style">
+        :root {
+            --paper-input-error:{
+                line-height: 32px;
+                font-size: 18px;
+            };
+        }
         paper-tab.long {
             min-width: 230px;
             max-width: 280px;
@@ -103,6 +109,15 @@
             background-color: var(--paper-indigo-500);
         }
 
+        .short {
+            margin-right: 0px;
+            width: 60px;
+        }
+
+        .long {
+            width: 60%;
+        }
+
         #download {
             height: auto;
             text-decoration: none;
@@ -174,8 +189,19 @@
                 <glycopeptide-dataset-generator id="datasource" glycopeptides="{{dataset}}"></glycopeptide-dataset-generator>
                 <div>
                     <div id="searchBox" class="horizontal wrap">
-                    <paper-textarea name="masses" label="List of glycopeptide masses (Da)" value="{{masses}}"></paper-textarea>
-                    <paper-input name="tolerance" label="tolerance" value="{{toleranceValue}}"></paper-input>
+                    <paper-input id="masses" name="masses"
+                                    pattern="^(\s*\d{1,5}(\.\d+){0,1}(\([-+]\d{1}\)){0,1},{0,1})+$"
+                                    required auto-validate
+                                    error-message="Incorrect value! Follow this examples: 831.456(+2) or 3456.3456"
+                                    label="List of hypothetical N-glycopeptide masses (Da) / precursor ions"
+                                    value="{{masses}}" class="long">
+                    </paper-input>
+                    <paper-input id="tolerance" name="tolerance"
+                                 label="tolerance" value="{{toleranceValue}}"
+                                 pattern="\d{1,4}(\.\d+){0,1}"
+                                 required auto-validate
+                                 error-message="Numeric values only!" class="short">
+                    </paper-input>
                     <paper-dropdown-menu>
                         <paper-listbox class="dropdown-content" attr-for-selected="value" selected="{{toleranceUnit}}">
                             <paper-item value="ppm">ppm</paper-item>
@@ -318,36 +344,37 @@
                 }
             },
             search: function() {
-                var multiResultElement = this.$$('#aResults');
-                multiResultElement.datasets = {};
+                if(this.$.masses.validate() && this.$.tolerance.validate()){
+                    var multiResultElement = this.$$('#aResults');
+                    multiResultElement.datasets = {};
 
-                if(this.masses=="" || this.masses==null){
-                    alert(this.errorMessage);
-                }
-                var chargeStatePattern = /\((\+\d+|\-\d+)\)/g;
-                var queryList = this.masses.split(",");
-                for(var i=0; i<queryList.length; i++){
-                    var chargeState = queryList[i].match(chargeStatePattern);
-                    if (chargeState){
-                        var mz = queryList[i].replace(chargeState[0], "");
-                        chargeState = new Number(chargeState[0].replace("(","").replace(")",""));
-                        queryList[i] = Math.abs((mz*chargeState)-(1.00727646677*chargeState)).toFixed(4);
-                    } else {
-                        queryList[i] = (queryList[i].trim());
+                    if(this.masses=="" || this.masses==null){
+                        alert(this.errorMessage);
                     }
-                };
+                    var chargeStatePattern = /\((\+\d+|\-\d+)\)/g;
+                    var queryList = this.masses.split(",");
+                    for(var i=0; i<queryList.length; i++){
+                        var chargeState = queryList[i].match(chargeStatePattern);
+                        if (chargeState){
+                            var mz = queryList[i].replace(chargeState[0], "");
+                            chargeState = new Number(chargeState[0].replace("(","").replace(")",""));
+                            queryList[i] = Math.abs((mz*chargeState)-(1.00727646677*chargeState)).toFixed(4);
+                        } else {
+                            queryList[i] = (queryList[i].trim());
+                        }
+                    };
 
-                var nonRedundantQueryList = queryList.filter(function(item, pos) {
-                    return queryList.indexOf(item) == pos;
-                });
-                multiResultElement.masses = nonRedundantQueryList;
+                    var nonRedundantQueryList = queryList.filter(function(item, pos) {
+                        return queryList.indexOf(item) == pos;
+                    });
+                    multiResultElement.masses = nonRedundantQueryList;
 
-                for(mass of nonRedundantQueryList){
-                    var query = this.controller.query(mass, this.toleranceUnit, this.toleranceValue, this._rangeObjectCreator());
-                    multiResultElement.newDataset(query);
+                    for(mass of nonRedundantQueryList){
+                        var query = this.controller.query(mass, this.toleranceUnit, this.toleranceValue, this._rangeObjectCreator());
+                        multiResultElement.newDataset(query);
+                    }
                 }
             },
-
             _rangeObjectCreator: function () {
                 var rangeBox = this.$.rangeBox;
                 var paperInputs = Array.prototype.slice.call(rangeBox.getElementsByTagName('paper-slider'));
