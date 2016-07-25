@@ -1,6 +1,8 @@
 <!-- Imports polymer -->
 <link rel="import" href="../iron-pages/iron-pages.html">
 <link rel="import" href="../iron-icons/iron-icons.html">
+<link rel="import" href="../iron-icon/iron-icon.html">
+<link rel="import" href="../iron-collapse/iron-collapse.html">
 <link rel="import" href="../paper-header-panel/paper-header-panel.html">
 <link rel="import" href="../paper-input/paper-input.html">
 <link rel="import" href="../paper-input/paper-textarea.html">
@@ -43,8 +45,8 @@
 
         paper-header-panel {
             margin-left: 36px;
-            margin-right: 48px;
-            min-width: 802px;
+            margin-right: 36px;
+            min-width: 760px;
             @apply(--shadow-elevation-2dp);
             --paper-header-panel-shadow: {
                 height: 6px;
@@ -56,11 +58,14 @@
             };
         }
 
+        iron-icon[disabled]{
+            display: none;
+        }
+
         paper-input {
-            margin-right: 0px;
+            margin-right: 20px;
             width: 60px;
             display: inline-block;
-            margin: 0px 0px 0px 80px;
         }
 
         paper-dropdown-menu {
@@ -80,7 +85,6 @@
             font-family: "Roboto";
             background-color: var(--paper-indigo-500);
             color: white;
-            margin: 0px 0px 30px 20px;
             --paper-button-raised-keyboard-focus: {
                 background-color: var(--paper-indigo-a300) !important;
                 color: white !important;
@@ -103,6 +107,9 @@
             padding: 0 10px;
             color: white;
             transition: height 0.2s;
+            border-radius: 5px 5px 0 0;
+            border: 1px solid rgba(0, 0, 0, 0.2);
+            box-shadow: 5px 5px 6px -1px rgba(0, 0, 0, 0.4);
         }
 
         .blue .paper-header {
@@ -118,13 +125,14 @@
             width: 60%;
         }
 
-        #download {
+        #download, #upload {
             height: auto;
             text-decoration: none;
             color: white;
         }
 
-        #downloadTab {
+        #downloadTab, #uploadTab {
+            padding: 0 0 0 0;
             position: absolute;
             right: 20px;
         }
@@ -157,17 +165,54 @@
             font-size: larger;
         }
 
+        #datasetInput {
+            opacity: 0;
+            position: absolute;
+            width: 100%;
+            height: 100%;
+        }
+
         #searchBox {
             border: 1px solid black;
             margin-left: 36px;
-            margin-right: 48px;
+            margin-right: 36px;
             padding-left: 20px;
-            min-width: 780px;
+            min-width: 738px;
+            border-radius: 0 0 5px 5px;
+            border: 1px solid rgba(0, 0, 0, 0.2);
+            box-shadow: 5px 5px 6px -1px rgba(0, 0, 0, 0.4);
+        }
+
+        #glycanFilterPanel {
+            margin-top: 20px;
+        }
+
+        #glycanFilterHeader {
+            height: 40px;
+            font-size: 18px;
+            font-weight: 600;
+            line-height: 40px;
+            border-bottom: none;
+            color: black;
+            background-color: whitesmoke;
+        }
+
+        #glycanFilterBox{
+            border: 1px solid black;
+            margin-left: 36px;
+            margin-right: 36px;
+            min-width: 758px;
+            border-radius: 0 0 5px 5px;
+            border: 1px solid rgba(0, 0, 0, 0.2);
+            box-shadow: 5px 5px 6px -1px rgba(0, 0, 0, 0.4);
         }
 
         #rangeBox{
-            margin-left: 50px;
-            margin-right: 10px;
+            padding: 30px 20px 20px 20px;
+        }
+
+        div[disabled]{
+            display: none;
         }
     </style>
     <template>
@@ -177,7 +222,15 @@
                     <paper-tab class="long">GENERATE GLYCOPEPTIDE DATASET</paper-tab>
                     <iron-icon icon="chevron-right" class="arrow" active></iron-icon>
                     <paper-tab id="searchTab" class="short" disabled>SEARCH</paper-tab>
-                    <div id="downloadTab" class="disabled">
+                    <paper-button id="uploadTab">
+                        <input id="datasetInput" type="file" on-change="loadDatasetFile">
+                        <span id="val">
+                            <iron-icon mini icon="file-upload"></iron-icon>
+                            UPLOAD DATASET
+                        </span>
+
+                    </paper-button>
+                    <div id="downloadTab" disabled>
                         <iron-icon mini icon="file-download"></iron-icon>
                         <a id="download" on-click="download">DOWNLOAD DATASET</a>
                     </div>
@@ -208,75 +261,84 @@
                             <paper-item value="Da">Da</paper-item>
                         </paper-listbox>
                     </paper-dropdown-menu>
-                    <paper-button raised class="indigo" on-click="search">search</paper-button>
+                    <paper-button raised class="indigo" on-click="search"><iron-icon icon="search"></iron-icon>search</paper-button>
                     </div>
-                    <h3 class="boxTitle">Glycan Filter</h3>
-                    <div id="rangeBox" class="layout horizontal wrap">
-                        <div class="singleRangeBox ">
-                            <div class="layout horizontal">
-                                <paper-toggle-button id="HexToggle" checked on-change="_searchAndDisableSlider">Hex : </paper-toggle-button>
-                                <span id="HexLabel" class="toggle-span-label">More or equal to 0</span>
-                            </div><br>
-                            <paper-slider id="HexRange" pin snaps max="10" max-markers="10" step="1" value="0" on-change="_searchAndChangeToggleLabel"></paper-slider>
+
+                    <paper-header-panel id="glycanFilterPanel" class="blue" mode="standard">
+                        <div id="glycanFilterHeader" class="paper-header" on-click="_toggleGlycanFilter">
+                            Filter by glycan composition
+                            <iron-icon id="expandIcon" icon="icons:unfold-more"></iron-icon>
+                            <iron-icon id="foldIcon" icon="icons:unfold-less" disabled></iron-icon>
                         </div>
-                        <div class="singleRangeBox">
-                            <div class="layout horizontal">
-                                <paper-toggle-button id="HexNAcToggle" checked on-change="_searchAndDisableSlider">HexNAc : </paper-toggle-button>
-                                <span id="HexNAcLabel" class="toggle-span-label">More or equal to 0</span>
-                            </div><br>
-                            <paper-slider id="HexNAcRange" pin snaps max="10" max-markers="10" step="1" value="0" on-change="_searchAndChangeToggleLabel"></paper-slider>
+                    </paper-header-panel>
+                    <iron-collapse id="glycanFilterBox" class="horizontal center-justified">
+                        <div id="rangeBox" class="layout horizontal wrap">
+                            <div class="singleRangeBox ">
+                                <div class="layout horizontal">
+                                    <paper-toggle-button id="HexToggle" checked on-change="_searchAndDisableSlider">Hex : </paper-toggle-button>
+                                    <span id="HexLabel" class="toggle-span-label">More or equal to 0</span>
+                                </div><br>
+                                <paper-slider id="HexRange" pin snaps max="10" max-markers="10" step="1" value="0" on-change="_searchAndChangeToggleLabel"></paper-slider>
+                            </div>
+                            <div class="singleRangeBox">
+                                <div class="layout horizontal">
+                                    <paper-toggle-button id="HexNAcToggle" checked on-change="_searchAndDisableSlider">HexNAc : </paper-toggle-button>
+                                    <span id="HexNAcLabel" class="toggle-span-label">More or equal to 0</span>
+                                </div><br>
+                                <paper-slider id="HexNAcRange" pin snaps max="10" max-markers="10" step="1" value="0" on-change="_searchAndChangeToggleLabel"></paper-slider>
+                            </div>
+                            <div class="singleRangeBox">
+                                <div class="layout horizontal">
+                                    <paper-toggle-button id="dHexToggle" checked on-change="_searchAndDisableSlider">Deoxyhexose : </paper-toggle-button>
+                                    <span id="dHexLabel" class="toggle-span-label">More or equal to 0</span>
+                                </div><br>
+                                <paper-slider id="dHexRange" pin snaps max="10" max-markers="10" step="1" value="0" on-change="_searchAndChangeToggleLabel"></paper-slider>
+                            </div>
+                            <div class="singleRangeBox">
+                                <div class="layout horizontal">
+                                    <paper-toggle-button id="NeuAcToggle" checked on-change="_searchAndDisableSlider">NeuAc : </paper-toggle-button>
+                                    <span id="NeuAcLabel" class="toggle-span-label">More or equal to 0</span>
+                                </div><br>
+                                <paper-slider id="NeuAcRange" pin snaps max="10" max-markers="10" step="1" value="0" on-change="_searchAndChangeToggleLabel"></paper-slider>
+                            </div>
+                            <div class="singleRangeBox">
+                                <div class="layout horizontal">
+                                    <paper-toggle-button id="NeuGcToggle" checked on-change="_searchAndDisableSlider">NeuGc : </paper-toggle-button>
+                                    <span id="NeuGcLabel" class="toggle-span-label">More or equal to 0</span>
+                                </div><br>
+                                <paper-slider id="NeuGcRange" pin snaps max="10" max-markers="10" step="1" value="0" on-change="_searchAndChangeToggleLabel"></paper-slider>
+                            </div>
+                            <div class="singleRangeBox">
+                                <div class="layout horizontal">
+                                    <paper-toggle-button id="KdnToggle" checked on-change="_searchAndDisableSlider">KDN : </paper-toggle-button>
+                                    <span id="KdnLabel" class="toggle-span-label">More or equal to 0</span>
+                                </div><br>
+                                <paper-slider id="KdnRange" pin snaps max="10" max-markers="10" step="1" value="0" on-change="_searchAndChangeToggleLabel"></paper-slider>
+                            </div>
+                            <div class="singleRangeBox">
+                                <div class="layout horizontal">
+                                    <paper-toggle-button id="PenToggle" checked on-change="_searchAndDisableSlider">Pentose : </paper-toggle-button>
+                                    <span id="PenLabel" class="toggle-span-label">More or equal to 0</span>
+                                </div><br>
+                                <paper-slider id="PenRange" pin snaps max="10" max-markers="10" step="1" value="0" on-change="_searchAndChangeToggleLabel"></paper-slider>
+                            </div>
+                            <div class="singleRangeBox">
+                                <div class="layout horizontal">
+                                    <paper-toggle-button id="HexAToggle" checked on-change="_searchAndDisableSlider">HexA : </paper-toggle-button>
+                                    <span id="HexALabel" class="toggle-span-label">More or equal to 0</span>
+                                </div><br>
+                                <paper-slider id="HexARange" pin snaps max="10" max-markers="10" step="1" value="0" on-change="_searchAndChangeToggleLabel"></paper-slider>
+                            </div>
+                            <div class="singleRangeBox">
+                                <div class="layout horizontal">
+                                    <paper-toggle-button id="SToggle" checked on-change="_searchAndDisableSlider">Sulphate : </paper-toggle-button>
+                                    <span id="SLabel" class="toggle-span-label">More or equal to 0</span>
+                                </div><br>
+                                <paper-slider id="SRange" pin snaps max="10" max-markers="10" step="1" value="0" on-change="_searchAndChangeToggleLabel"></paper-slider>
+                            </div>
                         </div>
-                        <div class="singleRangeBox">
-                            <div class="layout horizontal">
-                                <paper-toggle-button id="dHexToggle" checked on-change="_searchAndDisableSlider">Deoxyhexose : </paper-toggle-button>
-                                <span id="dHexLabel" class="toggle-span-label">More or equal to 0</span>
-                            </div><br>
-                            <paper-slider id="dHexRange" pin snaps max="10" max-markers="10" step="1" value="0" on-change="_searchAndChangeToggleLabel"></paper-slider>
-                        </div>
-                        <div class="singleRangeBox">
-                            <div class="layout horizontal">
-                                <paper-toggle-button id="NeuAcToggle" checked on-change="_searchAndDisableSlider">NeuAc : </paper-toggle-button>
-                                <span id="NeuAcLabel" class="toggle-span-label">More or equal to 0</span>
-                            </div><br>
-                            <paper-slider id="NeuAcRange" pin snaps max="10" max-markers="10" step="1" value="0" on-change="_searchAndChangeToggleLabel"></paper-slider>
-                        </div>
-                        <div class="singleRangeBox">
-                            <div class="layout horizontal">
-                                <paper-toggle-button id="NeuGcToggle" checked on-change="_searchAndDisableSlider">NeuGc : </paper-toggle-button>
-                                <span id="NeuGcLabel" class="toggle-span-label">More or equal to 0</span>
-                            </div><br>
-                            <paper-slider id="NeuGcRange" pin snaps max="10" max-markers="10" step="1" value="0" on-change="_searchAndChangeToggleLabel"></paper-slider>
-                        </div>
-                        <div class="singleRangeBox">
-                            <div class="layout horizontal">
-                                <paper-toggle-button id="KdnToggle" checked on-change="_searchAndDisableSlider">KDN : </paper-toggle-button>
-                                <span id="KdnLabel" class="toggle-span-label">More or equal to 0</span>
-                            </div><br>
-                            <paper-slider id="KdnRange" pin snaps max="10" max-markers="10" step="1" value="0" on-change="_searchAndChangeToggleLabel"></paper-slider>
-                        </div>
-                        <div class="singleRangeBox">
-                            <div class="layout horizontal">
-                                <paper-toggle-button id="PenToggle" checked on-change="_searchAndDisableSlider">Pentose : </paper-toggle-button>
-                                <span id="PenLabel" class="toggle-span-label">More or equal to 0</span>
-                            </div><br>
-                            <paper-slider id="PenRange" pin snaps max="10" max-markers="10" step="1" value="0" on-change="_searchAndChangeToggleLabel"></paper-slider>
-                        </div>
-                        <div class="singleRangeBox">
-                            <div class="layout horizontal">
-                                <paper-toggle-button id="HexAToggle" checked on-change="_searchAndDisableSlider">HexA : </paper-toggle-button>
-                                <span id="HexALabel" class="toggle-span-label">More or equal to 0</span>
-                            </div><br>
-                            <paper-slider id="HexARange" pin snaps max="10" max-markers="10" step="1" value="0" on-change="_searchAndChangeToggleLabel"></paper-slider>
-                        </div>
-                        <div class="singleRangeBox">
-                            <div class="layout horizontal">
-                                <paper-toggle-button id="SToggle" checked on-change="_searchAndDisableSlider">Sulphate : </paper-toggle-button>
-                                <span id="SLabel" class="toggle-span-label">More or equal to 0</span>
-                            </div><br>
-                            <paper-slider id="SRange" pin snaps max="10" max-markers="10" step="1" value="0" on-change="_searchAndChangeToggleLabel"></paper-slider>
-                        </div>
-                    </div>
-                    <paper-dialog id="finishedDialog"></paper-dialog>
+                    </iron-collapse>
+                   <paper-dialog id="finishedDialog"></paper-dialog>
                 </div>
             </iron-pages>
         </div>
@@ -321,13 +383,11 @@
                     this.$$("#"+monosaccharide+"Label").textContent  = "Not present";
                 }
             },
-
             _searchAndChangeToggleLabel: function (event) {
                 this.search();
                 var monosaccharide  = event.target.id.replace("Range","");
                 this.$$("#"+monosaccharide+"Label").textContent  = "More or equal to "+event.target.value;
             },
-
             _datasetChanged: function (value) {
                 this.controller = new searchController(this.dataset);
                 if(Object.keys(this.dataset).length>0){
@@ -335,13 +395,24 @@
                     this.$$("#downloadTab").setAttribute("class", "style-scope glycopeptide-advanced-search");
                     this.selected = 1;
                     this.$.finishedDialog.innerHTML =
-                        "<h2>You have generated a dataset containing "
+                        "<h2>Your dataset contains "
                         +this.$.datasource.datasetLength
                         +" theoretical glycopeptides</h2>";
                     this.$.finishedDialog.open();
                 }else{
                     this.$$("#searchTab").disabled = true;
                 }
+            },
+            _toggleGlycanFilter: function() {
+                this.$.glycanFilterBox.toggle();
+                if(this.$.foldIcon.hasAttribute('disabled')){
+                    this.$.expandIcon.setAttribute('disabled', 'true');
+                    this.$.foldIcon.removeAttribute('disabled');
+                }else{
+                    this.$.foldIcon.setAttribute('disabled', 'true');
+                    this.$.expandIcon.removeAttribute('disabled');
+                }
+
             },
             search: function() {
                 if(this.$.masses.validate() && this.$.tolerance.validate()){
@@ -388,7 +459,17 @@
                 });
                 return ranges;
             },
-
+            loadDatasetFile: function(evt){
+                var file = evt.target.files[0];
+                var reader = new FileReader();
+                var data = this;
+                reader.onload = (function(theFile) {
+                    return function(e) {
+                        data.dataset = e.target.result;
+                    };
+                })(file);
+                reader.readAsText(file);
+            },
             download: function(){
 
                 if(!this.filename){
