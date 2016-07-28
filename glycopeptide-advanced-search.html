@@ -3,6 +3,7 @@
 <link rel="import" href="../iron-icons/iron-icons.html">
 <link rel="import" href="../iron-icon/iron-icon.html">
 <link rel="import" href="../iron-collapse/iron-collapse.html">
+<link rel="import" href="../iron-localstorage/iron-localstorage.html">
 <link rel="import" href="../paper-header-panel/paper-header-panel.html">
 <link rel="import" href="../paper-input/paper-input.html">
 <link rel="import" href="../paper-input/paper-textarea.html">
@@ -103,7 +104,7 @@
             font-family: "Roboto";
             height: 60px;
             font-size: 20px;
-            line-height: 60px;
+            line-height: 48px;
             padding: 0 10px;
             color: white;
             transition: height 0.2s;
@@ -135,6 +136,10 @@
             padding: 0 0 0 0;
             position: absolute;
             right: 20px;
+        }
+
+        #downloadTab {
+            margin-right: 175px;
         }
 
         .disabled {
@@ -211,6 +216,16 @@
             padding: 30px 20px 20px 20px;
         }
 
+        #uploadErrorMessage {
+            font-family: "Roboto";
+            font-weight: 600;
+            font-size: 18px;
+            color: red;
+            float: right;
+            margin-right: 70px;
+            margin-top:15px;
+        }
+
         div[disabled]{
             display: none;
         }
@@ -238,8 +253,10 @@
             </div>
         </paper-header-panel>
         <div>
+            <div id="uploadErrorMessage" disabled>Invalid dataset!</div>
             <iron-pages selected={{selected}}>
-                <glycopeptide-dataset-generator id="datasource" glycopeptides="{{dataset}}"></glycopeptide-dataset-generator>
+                <glycopeptide-dataset-generator id="datasource" glycopeptides="{{dataset}}" dataset-length="{{datasetLength}}">
+                </glycopeptide-dataset-generator>
                 <div>
                     <div id="searchBox" class="horizontal wrap">
                     <paper-input id="masses" name="masses"
@@ -255,6 +272,8 @@
                                  required auto-validate
                                  error-message="Numeric values only!" class="short">
                     </paper-input>
+                    <iron-localstorage name="toleranceValueCache" value="{{toleranceValue}}"
+                                           on-iron-localstorage-load-empty="_initializeDefaultTolValue">
                     <paper-dropdown-menu>
                         <paper-listbox class="dropdown-content" attr-for-selected="value" selected="{{toleranceUnit}}">
                             <paper-item value="ppm">ppm</paper-item>
@@ -338,10 +357,10 @@
                             </div>
                         </div>
                     </iron-collapse>
-                   <paper-dialog id="finishedDialog"></paper-dialog>
                 </div>
             </iron-pages>
         </div>
+        <paper-dialog id="finishedDialog"></paper-dialog>
 
         <glycopeptide-multi-result id="aResults"></glycopeptide-multi-result>
     </template>
@@ -354,19 +373,20 @@
                 dataset: {
                     observer: '_datasetChanged'
                 },
-                controller: Object,
-                masses: String,
+                datasetLength: {
+                    type: Number
+                },
+                controller: {
+                    type: Object
+                },
+                masses: {
+                    type: String
+                },
                 toleranceUnit: {
-                    type: String,
-                    value: "ppm"
+                    type: String
                 },
                 toleranceValue: {
-                    type: Number,
-                    value: 10
-                },
-                errorMessage: {
-                    type: String,
-                    value: "Please check your query"
+                    type: Number
                 }
             },
             ready: function () {
@@ -388,19 +408,40 @@
                 var monosaccharide  = event.target.id.replace("Range","");
                 this.$$("#"+monosaccharide+"Label").textContent  = "More or equal to "+event.target.value;
             },
+            _validateDataset: function(dataset) {
+                if(typeof dataset!='object'){
+                    return false;
+                }
+                var datasetLength = 0;
+                for (var bucket in dataset){
+                    if(typeof dataset[bucket]!='object'){
+                        return false;
+                    }
+                    for(var glycopeptide in dataset[bucket]){
+                        datasetLength +=1;
+                        if(typeof dataset[bucket][glycopeptide][0] != 'object' ||
+                        typeof dataset[bucket][glycopeptide][1] != 'string' ||
+                        typeof dataset[bucket][glycopeptide][2] != 'number'){
+                            return false;
+                        }
+                    }
+                }
+                this.datasetLength = datasetLength;
+                return true;
+            },
             _datasetChanged: function (value) {
                 this.controller = new searchController(this.dataset);
                 if(Object.keys(this.dataset).length>0){
-                    this.$$("#searchTab").disabled = false;
-                    this.$$("#downloadTab").setAttribute("class", "style-scope glycopeptide-advanced-search");
+                    this.$$("#searchTab").removeAttribute('disabled');
+                    this.$.downloadTab.removeAttribute('disabled');
                     this.selected = 1;
                     this.$.finishedDialog.innerHTML =
                         "<h2>Your dataset contains "
-                        +this.$.datasource.datasetLength
+                        +this.datasetLength
                         +" theoretical glycopeptides</h2>";
                     this.$.finishedDialog.open();
                 }else{
-                    this.$$("#searchTab").disabled = true;
+                    this.$$("#searchTab").setAttribute('disabled', true);
                 }
             },
             _toggleGlycanFilter: function() {
@@ -419,9 +460,6 @@
                     var multiResultElement = this.$$('#aResults');
                     multiResultElement.datasets = {};
 
-                    if(this.masses=="" || this.masses==null){
-                        alert(this.errorMessage);
-                    }
                     var chargeStatePattern = /\((\+\d+|\-\d+)\)/g;
                     var queryList = this.masses.split(",");
                     for(var i=0; i<queryList.length; i++){
@@ -459,13 +497,25 @@
                 });
                 return ranges;
             },
+            _initializeDefaultTolUnit: function(){
+                this.set('toleranceUnit', 'ppm');
+            },
+            _initializeDefaultTolValue: function(){
+                this.set('toleranceValue', 10);
+            },
             loadDatasetFile: function(evt){
                 var file = evt.target.files[0];
                 var reader = new FileReader();
                 var data = this;
                 reader.onload = (function(theFile) {
                     return function(e) {
-                        data.dataset = e.target.result;
+                        var json = JSON.parse(e.target.result);
+                        if(data._validateDataset(json)){
+                            data.dataset = json;
+                            data.$.uploadErrorMessage.setAttribute('disabled',true);
+                        }else{
+                            data.$.uploadErrorMessage.removeAttribute('disabled');
+                        }
                     };
                 })(file);
                 reader.readAsText(file);
