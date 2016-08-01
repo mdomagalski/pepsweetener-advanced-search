@@ -25,7 +25,8 @@
     "paper-dropdown-menu": "PolymerElements/paper-dropdown-menu#^1.2.2",
     "paper-item": "PolymerElements/paper-item#^1.2.1",
     "paper-listbox": "PolymerElements/paper-listbox#^1.1.2",
-    "iron-localstorage": "PolymerElements/iron-localstorage#^1.0.6"
+    "iron-localstorage": "PolymerElements/iron-localstorage#^1.0.6",
+    "pepsweetener-glycan-filter": "https://mdomagalski@bitbucket.org/sib-pig/pepsweetener-glycan-filter.git"
   },
   "resolutions": {
     "polymer": "^1.2.1",
