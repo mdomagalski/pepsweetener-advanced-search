@@ -347,7 +347,8 @@
                     });
                     multiResultElement.masses = nonRedundantQueryList;
 
-                    for(mass of nonRedundantQueryList){
+                    for(var idx in nonRedundantQueryList){
+                        var mass = nonRedundantQueryList[idx];
                         var query = this.controller.query(mass, this.toleranceUnit, this.toleranceValue, this.glycanFilter);
                         multiResultElement.newDataset(query);
                     }
