@@ -281,6 +281,9 @@
                             <paper-item value="ppm">ppm</paper-item>
                             <paper-item value="Da">Da</paper-item>
                         </paper-listbox>
+                        <iron-localstorage name="toleranceUnitCache" value="{{toleranceUnit}}"
+                                           on-iron-localstorage-load-empty="_initializeDefaultTolUnit">
+                        </iron-localstorage>
                     </paper-dropdown-menu>
                     <paper-button raised class="indigo" on-click="search"><iron-icon icon="search"></iron-icon>search</paper-button>
                     </div>
@@ -386,7 +389,8 @@
                     }
                     for(var glycopeptide in dataset[bucket]){
                         datasetLength +=1;
-                        if(typeof dataset[bucket][glycopeptide][0] != 'object' ||
+                        //console.log('glycopeptide: '+rss(dataset[bucket][glycopeptide][0]['sequence']));
+                        if(typeof dataset[bucket][glycopeptide][0] != 'string' ||
                             typeof dataset[bucket][glycopeptide][1] != 'string' ||
                             typeof dataset[bucket][glycopeptide][2] != 'number'){
                             return false;
