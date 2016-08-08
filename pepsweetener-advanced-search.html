@@ -18,10 +18,8 @@
 <link rel="import" href="../paper-tabs/paper-tabs.html">
 <link rel="import" href="../paper-toggle-button/paper-toggle-button.html">
 <link rel="import" href="../pepsweetener-glycan-filter/pepsweetener-glycan-filter.html">
-
-
-<link rel="import" href="../glycopeptide-dataset-generator/glycopeptide-dataset-generator.html">
-<link rel="import" href="../glycopeptide-multi-result/glycopeptide-multi-result.html">
+<link rel="import" href="../pepsweetener-dataset-generator/pepsweetener-dataset-generator.html">
+<link rel="import" href="../pepsweetener-multi-result/pepsweetener-multi-result.html">
 
 <script src="search-controller.js"></script>
 
@@ -256,8 +254,8 @@
         <div>
             <div id="uploadErrorMessage" disabled>Invalid dataset!</div>
             <iron-pages selected={{selected}}>
-                <glycopeptide-dataset-generator id="datasource" glycopeptides="{{dataset}}" dataset-length="{{datasetLength}}">
-                </glycopeptide-dataset-generator>
+                <pepsweetener-dataset-generator id="datasource" glycopeptides="{{dataset}}" dataset-length="{{datasetLength}}">
+                </pepsweetener-dataset-generator>
                 <div>
                     <div id="searchBox" class="horizontal wrap">
                     <paper-input id="masses" name="masses"
@@ -293,7 +291,7 @@
         </div>
         <paper-dialog id="finishedDialog"></paper-dialog>
 
-        <glycopeptide-multi-result id="aResults"></glycopeptide-multi-result>
+        <pepsweetener-multi-result id="aResults"></pepsweetener-multi-result>
     </template>
 
     <!-- Registers custom element -->
