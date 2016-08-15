@@ -262,7 +262,7 @@
                     </paper-dropdown-menu>
                     <paper-button raised class="indigo" on-click="search"><iron-icon icon="search"></iron-icon>search</paper-button>
                     </div>
-                    <pepsweetener-glycan-filter filter="{{glycanFilter}}"></pepsweetener-glycan-filter>
+                    <pepsweetener-glycan-filter id="glycanFilter" filter="{{glycanFilter}}"></pepsweetener-glycan-filter>
                 </div>
             </iron-pages>
         </div>
@@ -304,6 +304,7 @@
             },
             search: function() {
                 if(this.$.masses.validate() && this.$.tolerance.validate()){
+                    this.$.glycanFilter.querySelector("#glycanFilterBox").removeAttribute('opened');
                     var multiResultElement = this.$$('#aResults');
                     multiResultElement.datasets = {};
 
