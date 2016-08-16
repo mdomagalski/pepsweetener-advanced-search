@@ -213,7 +213,7 @@
                     <paper-tab class="long">GENERATE GLYCOPEPTIDE DATASET</paper-tab>
                     <iron-icon icon="chevron-right" class="arrow" active></iron-icon>
                     <paper-tab id="searchTab" class="short" disabled>SEARCH</paper-tab>
-                    <paper-button id="uploadTab">
+<!--                    <paper-button id="uploadTab">
                         <input id="datasetInput" type="file" on-change="loadDatasetFile">
                         <span id="val">
                             <iron-icon mini icon="file-upload"></iron-icon>
@@ -224,12 +224,12 @@
                     <div id="downloadTab" disabled>
                         <iron-icon mini icon="file-download"></iron-icon>
                         <a id="download" on-click="download">DOWNLOAD DATASET</a>
-                    </div>
+                    </div>-->
                 </paper-tabs>
             </div>
         </paper-header-panel>
         <div>
-            <div id="uploadErrorMessage" disabled>Invalid dataset!</div>
+            <!--<div id="uploadErrorMessage" disabled>Invalid dataset!</div>-->
             <iron-pages selected={{selected}}>
                 <pepsweetener-dataset-generator id="datasource" glycopeptides="{{dataset}}" dataset-length="{{datasetLength}}">
                 </pepsweetener-dataset-generator>
@@ -343,7 +343,7 @@
                 this.controller = new searchController(this.dataset);
                 if(Object.keys(this.dataset).length>0){
                     this.$$("#searchTab").removeAttribute('disabled');
-                    this.$.downloadTab.removeAttribute('disabled');
+                    //this.$.downloadTab.removeAttribute('disabled');
                     this.selected = 1;
                     this.$.finishedDialog.innerHTML =
                         "<h2>Your dataset contains "
@@ -365,7 +365,6 @@
                     }
                     for(var glycopeptide in dataset[bucket]){
                         datasetLength +=1;
-                        //console.log('glycopeptide: '+rss(dataset[bucket][glycopeptide][0]['sequence']));
                         if(typeof dataset[bucket][glycopeptide][0] != 'string' ||
                             typeof dataset[bucket][glycopeptide][1] != 'string' ||
                             typeof dataset[bucket][glycopeptide][2] != 'number'){
@@ -397,7 +396,7 @@
 
                 if(!this.filename){
                     timestamp = new Date().getTime();
-                    this.filename = "pep-sweetener-dataset-"+timestamp+".json";
+                    this.filename = "pepsweetener-dataset-"+timestamp+".json";
                 }
 
                 var button = this.$.download;
