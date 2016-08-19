@@ -203,6 +203,11 @@
         div[disabled]{
             display: none;
         }
+
+        paper-dialog {
+            font-size: 24px;
+            font-weight: 500;
+        }
     </style>
     <template>
         <paper-header-panel class="blue flex" mode="standard">
@@ -344,9 +349,9 @@
                     //this.$.downloadTab.removeAttribute('disabled');
                     this.selected = 1;
                     this.$.finishedDialog.innerHTML =
-                        "<h2>Your dataset contains "
+                        "<div>Your dataset contains "
                         +this.datasetLength
-                        +" theoretical glycopeptides</h2>";
+                        +" theoretical glycopeptides</div>";
                     this.$.finishedDialog.open();
                 }else{
                     this.$$("#searchTab").setAttribute('disabled', true);
